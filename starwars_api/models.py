@@ -1,6 +1,5 @@
 from starwars_api.client import SWAPIClient
 from starwars_api.exceptions import SWAPIClientError
-from starwars_api.settings import BASE_URL
 
 api_client = SWAPIClient()
 
