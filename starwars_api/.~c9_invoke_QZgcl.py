@@ -22,10 +22,10 @@ class BaseModel(object):
         Returns an object of current Model requesting data to SWAPI using
         the api_client.
         """
-        get_method_name = "get_{resource_name}".format(
-            resource_name = cls.RESOURCE_NAME)
-        data = getattr(api_client, get_method_name)(resource_id)
-        return cls(data)
+        # example-> luke = People.get(1) 
+        result = api_client._call_swapi("%s/%s/%s" % (BASE_URL, 
+        cls, str(resource_id)))
+        return result
 
     @classmethod
     def all(cls):
@@ -34,11 +34,11 @@ class BaseModel(object):
         later in charge of performing requests to SWAPI for each of the
         pages while looping.
         """
-        if cls.RESOURCE_NAME == 'people':
-            return PeopleQuerySet()
-        if cls.RESOURCE_NAME == 'films':
-            return FilmsQuerySet()
+        query_set = None
+        # do stuff
+        return query_set
         
+
 
 class People(BaseModel):
     """Representing a single person"""
@@ -49,7 +49,6 @@ class People(BaseModel):
 
     def __repr__(self):
         return 'Person: {0}'.format(self.name)
-
 
 class Films(BaseModel):
     RESOURCE_NAME = 'films'
@@ -62,46 +61,20 @@ class Films(BaseModel):
 
 
 class BaseQuerySet(object):
-    RESOURCE_NAME = None
-    
-    def __init__(self):
-        self.page_index = 0
-        self.total_index = 1
-        self.results = None
-        self.total_count = None
-        self.next_page_number = 1
-        self.make_request()
 
-    def make_request(self):
-        param = "?page={}".format(self.next_page_number)
-        get_method_name = "get_{resource_name}".format(resource_name = self.RESOURCE_NAME) 
-        self.data = getattr(api_client, get_method_name)(param)
-        self.total_count = self.data['count']
-        self.results = self.data['results']
-        self.next_page_number += 1
-        
+    def __init__(self):
+        self.items = []
+
     def __iter__(self):
-        return self
+        pass
 
     def __next__(self):
         """
         Must handle requests to next pages in SWAPI when objects in the current
         page were all consumed.
         """
-        if self.results is None:
-            self.make_request()
-        if self.total_index > self.total_count:
-            raise StopIteration
-        if self.page_index == 10:
-            self.page_index = 0
-            self.make_request()
-        if self.RESOURCE_NAME == 'people':
-            p = People(self.results[self.page_index])
-        elif self.RESOURCE_NAME == 'films':
-            p = Films(self.results[self.page_index])
-        self.page_index += 1
-        self.total_index += 1
-        return p
+        for i in self.items:
+            yield i
 
     next = __next__
 
@@ -111,9 +84,9 @@ class BaseQuerySet(object):
         If the counter is not persisted as a QuerySet instance attr,
         a new request is performed to the API in order to get it.
         """
-        return self.total_count
-         
-         
+        return len(self.items)
+
+        self.next = next
 class PeopleQuerySet(BaseQuerySet):
     RESOURCE_NAME = 'people'
 

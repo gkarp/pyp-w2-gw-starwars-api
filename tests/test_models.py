@@ -40,6 +40,7 @@ class PeopleQuerySetTestCase(BaseStarWarsAPITestCase):
     @responses.activate
     def test_people_qs_iterable(self):
         qs = People.all()
+        # print("\n".join([p['name'] for p in People.all()]))
         self.assertEqual(len([elem for elem in qs]), 15)  # 10 in page1, 5 in page2
 
     @responses.activate

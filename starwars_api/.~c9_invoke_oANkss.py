@@ -1,6 +1,9 @@
-from starwars_api.client import SWAPIClient
-from starwars_api.exceptions import SWAPIClientError
-from starwars_api.settings import BASE_URL
+from client import SWAPIClient
+from exceptions import SWAPIClientError
+from settings import BASE_URL
+#from starwars_api.client import SWAPIClient
+#from starwars_api.exceptions import SWAPIClientError
+#from starwars_api.settings import BASE_URL
 
 api_client = SWAPIClient()
 
@@ -27,6 +30,7 @@ class BaseModel(object):
         data = getattr(api_client, get_method_name)(resource_id)
         return cls(data)
 
+
     @classmethod
     def all(cls):
         """
@@ -40,6 +44,7 @@ class BaseModel(object):
             return FilmsQuerySet()
         
 
+
 class People(BaseModel):
     """Representing a single person"""
     RESOURCE_NAME = 'people'
@@ -49,7 +54,6 @@ class People(BaseModel):
 
     def __repr__(self):
         return 'Person: {0}'.format(self.name)
-
 
 class Films(BaseModel):
     RESOURCE_NAME = 'films'
@@ -62,48 +66,83 @@ class Films(BaseModel):
 
 
 class BaseQuerySet(object):
+    # 1) send out the appropriate query based on the type of resource
+             # ^ the result is a dictionary with 4 elements including:
+             # count = total number of that resource stored on the website
+             # next = the next page url, containing the next 10 results
+             # previous = ^ oppositve of above
+             # results = json containing 10 different resources 
+             
+    # 2)  return an iterable object
     RESOURCE_NAME = None
     
     def __init__(self):
-        self.page_index = 0
-        self.total_index = 1
-        self.results = None
-        self.total_count = None
-        self.next_page_number = 1
-        self.make_request()
+        self.index = 0
+        self.page = None
+        self.count = None
+        self.next_page_number = 
+        
+    """
+    def make_request(self, cls):
+        get_method_name = "get_{resource_name}".format(resource_name = cls.RESOURCE_NAME) 
+        self.data = getattr(api_client, get_method_name)
+        return self.data
+    """
 
     def make_request(self):
         param = "?page={}".format(self.next_page_number)
         get_method_name = "get_{resource_name}".format(resource_name = self.RESOURCE_NAME) 
         self.data = getattr(api_client, get_method_name)(param)
-        self.total_count = self.data['count']
+        self.count = self.data['count']
         self.results = self.data['results']
         self.next_page_number += 1
+        #print(self.items)
         
     def __iter__(self):
-        return self
+        #self.index = 0 -> may not make sense to reset i(param)etwork requests)
+        return iter(self.results)
 
     def __next__(self):
         """
         Must handle requests to next pages in SWAPI when objects in the current
         page were all consumed.
         """
-        if self.results is None:
+        if self.page is None:
             self.make_request()
-        if self.total_index > self.total_count:
+        if self.index == 10:
+            self.index = 0
+            self.make_request()
+        if self.index >= self.count:
             raise StopIteration
-        if self.page_index == 10:
-            self.page_index = 0
-            self.make_request()
-        if self.RESOURCE_NAME == 'people':
-            p = People(self.results[self.page_index])
-        elif self.RESOURCE_NAME == 'films':
-            p = Films(self.results[self.page_index])
-        self.page_index += 1
-        self.total_index += 1
+        p = People(self.results[self.index])
+        self.index += 1
+       # print(self.results[-1])    
         return p
 
+        
+        '''
+        #for i in self.items:
+        #    yield i
+        if self.page is None:
+            self.make_request()
+        if self.index >= self.count:
+            raise StopIteration
+        self.index += 10
+        self.page += 1
+        '''
+        
+        
     next = __next__
+    
+    """
+    def make_request():
+        #json data goes here
+        self.page = json.load(json_page_file_name)
+        
+        json_page_file_name = "page{page_num}.json".format(page_num = self.next_page_number)
+        with iper(json_page_file_name, 'r') as fp:
+            self.page = json.load(fp)
+    """
 
     def count(self):
         """
@@ -111,9 +150,10 @@ class BaseQuerySet(object):
         If the counter is not persisted as a QuerySet instance attr,
         a new request is performed to the API in order to get it.
         """
-        return self.total_count
+        return self.count
          
-         
+
+
 class PeopleQuerySet(BaseQuerySet):
     RESOURCE_NAME = 'people'
 
@@ -132,3 +172,30 @@ class FilmsQuerySet(BaseQuerySet):
 
     def __repr__(self):
         return 'FilmsQuerySet: {0} objects'.format(str(len(self.objects)))
+    print(i['name'])
+pa = People.all()
+pa.make_request()
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+print(next(pa))
+#for i in pa:
+#    print(i['name'])
+    #print(i.name)
