@@ -9,10 +9,8 @@ except ImportError:
     from urllib.parse import urlunsplit, urlsplit, urlencode
 import requests
 
-#from starwars_api import settings
-#from starwars_api.exceptions import SWAPIClientError
-import settings
-from exceptions import SWAPIClientError
+from starwars_api import settings
+from starwars_api.exceptions import SWAPIClientError
 
 class SWAPIClient(object):
     GET_TIMEOUT = 30
